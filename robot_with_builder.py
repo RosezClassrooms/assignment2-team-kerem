@@ -5,10 +5,10 @@ class Robot:
   # Uses a lot of flag logic here:  Is that necessary?
   # Does the use of this flag logic create other problems?
   def __init__(self):
-    self.bipedal = False
-    self.quadripedal = False
-    self.wheeled = False
-    self.flying = False
+    self.bipedal = ""
+    self.quadripedal = ""
+    self.wheeled = ""
+    self.flying = ""
     self.traversal = []
     self.detection_systems = []
 
@@ -18,11 +18,11 @@ class Robot:
     string = ""
     if self.bipedal:
       string += "BIPEDAL "
-    if self.quadripedal:
+    elif self.quadripedal:
       string += "QUADRIPEDAL "
-    if self.flying:
+    elif self.flying:
       string += "FLYING ROBOT "
-    if self.wheeled:
+    elif self.wheeled:
       string += "ROBOT ON WHEELS\n"
     else:
       string += "ROBOT\n"
@@ -90,9 +90,9 @@ class InfraredDetectionSystem:
 # We're using inheritence, but it's shallow
 class RobotBuilder(ABC):
     
-  @abstractmethod
+  
   def reset(self):
-    pass
+    self.product = Robot()
 
   @abstractmethod
   def build_traversal(self):
@@ -102,8 +102,35 @@ class RobotBuilder(ABC):
   def build_detection_system(self):
     pass
 
+  
+  def get_product(self):
+    pass
+
     
 # Concrete Builder class:  there would be MANY of these
+class AutonomousAndroidCarBuilder(RobotBuilder):
+  def __init__(self):
+    self.product = Robot()
+
+  def reset(self):
+    self.product = Robot()
+
+  # All of the concrete builders have this in common
+  # Should it be elevated to the superclass?  YES
+  def get_product(self):
+    return self.product
+
+  def build_traversal(self):
+    self.product.bipedal = True
+    self.product.wheeled = True
+    self.product.traversal.append(FourWheels())
+    self.product.traversal.append(BipedalLegs())
+    self.product.traversal.append(Arms())
+
+  def build_detection_system(self):
+    self.product.detection_systems.append(CameraDetectionSystem())
+    self.product.detection_systems.append(InfraredDetectionSystem())
+
 class AndroidBuilder(RobotBuilder):
   def __init__(self):
     self.product = Robot()
@@ -112,7 +139,7 @@ class AndroidBuilder(RobotBuilder):
     self.product = Robot()
 
   # All of the concrete builders have this in common
-  # Should it be elevated to the superclass?  
+  # Should it be elevated to the superclass?  YES
   def get_product(self):
     return self.product
 
@@ -125,6 +152,7 @@ class AndroidBuilder(RobotBuilder):
     self.product.detection_systems.append(CameraDetectionSystem())
 
 # Concrete Builder class:  there would be many of these
+
 class AutonomousCarBuilder(RobotBuilder):
   def __init__(self):
     self.product = Robot()
@@ -145,7 +173,7 @@ class AutonomousCarBuilder(RobotBuilder):
     self.product.detection_systems.append(InfraredDetectionSystem())
 
 #-------------------------------------------------------------------------
-#'''
+'''
 # Remove # in line above to comment out this section when using Director
 
 # Using the builders to create different robots
@@ -165,26 +193,26 @@ print(builder.get_product())
 #-------------------------------------------------------
 
 # Diretor manages all of the Builders
-# Do we need separate make methods?
+# Do we need separate make methods? NO
 class Director:
-    def make_android(self, builder):
+    def make_all(self, builder):
         builder.build_traversal()
         builder.build_detection_system()
         return builder.get_product()
 
-    def make_autonomous_car(self, builder):
-        builder.build_traversal()
-        builder.build_detection_system()
-        return builder.get_product()
+    
 
 director = Director()
 
 builder = AndroidBuilder()
-print(director.make_android(builder))
+print(director.make_all(builder))
 
 builder = AutonomousCarBuilder()
-print(director.make_autonomous_car(builder))
+print(director.make_all(builder))
+
+builder = AutonomousAndroidCarBuilder()
+print(director.make_all(builder))
 
 # comment out line below when testing director
-'''
+#'''
 
